@@ -24,8 +24,8 @@ class MyServer(BaseHTTPRequestHandler):
     pi = pigpio.pi()
 
     # Shadowcat Motor - ODrive Config on Raspberry Pi
-    VAC_GPIO = 12
-    BRS_GPIO = 16
+    VAC_GPIO = 16
+    BRS_GPIO = 12
 
     od1 = odrive.find_any(serial_number="2064344D4230")
     print("Detected ODrive with serial number=", od1.serial_number)
@@ -84,8 +84,8 @@ class MyServer(BaseHTTPRequestHandler):
     sleep(2)
     od2.axis1.requested_state = 8
     sleep(2)
-    # pi.write(VAC_GPIO, 1)
-    # pi.write(BRS_GPIO, 1)
+    pi.write(VAC_GPIO, 1)
+    pi.write(BRS_GPIO, 1)
 
     print("Complete!")
     # Start the Raspberry Pi Camera Stream (Andy's Laptop directory)
@@ -96,6 +96,7 @@ class MyServer(BaseHTTPRequestHandler):
         print("Camera not connected")
 
     suc = False
+    brush = False
 
     cw = True
     cw2 = True
@@ -527,9 +528,9 @@ class MyServer(BaseHTTPRequestHandler):
                     <h1>ShadowCat Control Panel</h1>
                     <div class="container">
                         <div class="buttons_vertical">
-                            <form action="/" method="POST">
-                                <input id="brush" type="submit" name="brush" value="BRUSH">
-                                <input id="vacuum" type="submit" name="vacuum" value="VACUUM">
+                            <form>
+                                <input id="brush" type="submit" name="brush" value="BRUSH" onclick="activate_brush()">
+                                <input id="vacuum" type="submit" name="vacuum" value="VACUUM" onclick="activate_vacuum()">
                             </form>
                         </div>
                         <img class="video" src="http://raspberrypi.local:8080/?action=stream" />
@@ -551,6 +552,15 @@ class MyServer(BaseHTTPRequestHandler):
                     <div id="joyDiv"></div>
 
                     <script>
+                        function activate_brush() {{
+                            console.log(data);
+                            d = document.getElementById('brush').value;
+                            $.post("/", {{m1: d, m2: 0}});
+                        }}
+                        function activate_vacuum() {{
+                            d = document.getElementById('vacuum').value;
+                            $.post("/", {{m1: d, m2: 0}});
+                        }}
                         var joy = new JoyStick('joyDiv',{{
                             // The ID of canvas element
                             title: 'joystick',
@@ -606,7 +616,7 @@ class MyServer(BaseHTTPRequestHandler):
                                 count = 0
                                 console.log("REVERSE")
                             }}
-                            data.push(parseFloat(joy1Y.value));
+                            data.push(parseInt(joy1Y.value));
                             if (parseInt(joy1X.value) > 0) {{
                                 count = 0
                                 console.log("RIGHT");
@@ -616,7 +626,7 @@ class MyServer(BaseHTTPRequestHandler):
                                 console.log("LEFT");
                                 console.log("MOTOR R: ", joy1X.value);
                             }}
-                            data.push(parseFloat(joy1X.value));
+                            data.push(parseInt(joy1X.value));
                             if (data[0] == 0 && data[1] == 0 && count == 0) {{
                                 count = count + 1;
                                 console.log(count, data);
@@ -654,14 +664,6 @@ class MyServer(BaseHTTPRequestHandler):
 
         print(post_data)
 
-        if post_data[0] == "Vacuum":
-            self.pi.write(self.VAC_GPIO, 0)
-        elif post_data[0] == "Brush":
-            self.pi.write(self.BRS_GPIO, 0)
-        # Joystick control
-        Y = float(post_data[0])
-        X = float(post_data[1])
-
         # Easier control over our maximum speed with a variable
         N = 1
 
@@ -676,53 +678,97 @@ class MyServer(BaseHTTPRequestHandler):
 
         """
 
-        # All the motor control here!!!
-        if (X > N or Y > N or X < -N or Y < -N):  # Joystick can register out of bound values sometimes
+        if post_data[0] == "VACUUM":
+            print("VRRRRUUUUUMMMM")
+            print(self.pi.read(self.VAC_GPIO))
+            print("/n/n")
+            # self.pi.write(self.VAC_GPIO, 0)
+            if self.pi.read(self.VAC_GPIO) == 1:
+                # if self.suc == False:
+                print("vacuum worrr")
+                self.pi.write(self.VAC_GPIO, 0)
+                # self.suc = True
+            else:
+                print("vacuum not worrr")
+                self.pi.write(self.VAC_GPIO, 1)
+                sleep(0.55)
+                self.pi.write(self.VAC_GPIO, 0)
+                sleep(0.55)
+                self.pi.write(self.VAC_GPIO, 1)
+                # self.suc = False
+        elif post_data[0] == "BRUSH":
+            print("BRUSH SOUNDS")
+            print(self.pi.read(self.BRS_GPIO))
+            print("/n/n")
+            # self.pi.write(self.BRS_GPIO, 0)
+            if self.pi.read(self.BRS_GPIO) == 1:
+                # if self.brush == False:
+                print("brush worrr")
+                self.pi.write(self.BRS_GPIO, 0)
+                # self.brush = True
+            else:
+                print("brush not worrr")
+                self.pi.write(self.BRS_GPIO, 1)
+                sleep(0.55)
+                # self.pi.write(self.BRS_GPIO, 0)
+                # sleep(0.55)
+                # self.pi.write(self.BRS_GPIO, 1)
+                # self.brush = False
+
+            # Joystick control
+        try:
+            Y = int(post_data[0])
+            X = int(post_data[1])
+            # All the motor control here!!!
+            # Joystick can register out of bound values sometimes
+            if (X > N or Y > N or X < -N or Y < -N):
+                pass
+            elif (Y > 0 and X <= 1 and X >= -1):  # FORWARD
+                self.od1.axis0.controller.input_vel = -N
+                self.od1.axis1.controller.input_vel = -N
+                self.od2.axis0.controller.input_vel = N
+                self.od2.axis1.controller.input_vel = N
+            elif (Y < 0 and X <= 1 and X >= -1):  # BACKWARD
+                self.od1.axis0.controller.input_vel = N
+                self.od1.axis1.controller.input_vel = N
+                self.od2.axis0.controller.input_vel = -N
+                self.od2.axis1.controller.input_vel = -N
+            # elif (Y > 0 and X > 0):  # TURN RIGHT FORWARD
+            #     print("RIGHT")
+            #     self.od1.axis0.controller.input_vel = -X
+            #     self.od1.axis1.controller.input_vel = -X
+            #     self.od2.axis0.controller.input_vel = -X
+            #     self.od2.axis1.controller.input_vel = -X
+            # elif (Y > 0 and X < 0):  # TURN LEFT FORWARD
+            #     print("LEFT")
+            #     self.od1.axis0.controller.input_vel = -X
+            #     self.od1.axis1.controller.input_vel = -X
+            #     self.od2.axis0.controller.input_vel = -X
+            #     self.od2.axis1.controller.input_vel = -X
+            # elif (Y < 0 and X > 0):  # TURN RIGHT BACKWARD
+            #     print("RIGHT BACK")
+            #     self.od1.axis0.controller.input_vel = -X
+            #     self.od1.axis1.controller.input_vel = -X
+            #     self.od2.axis0.controller.input_vel = -X
+            #     self.od2.axis1.controller.input_vel = -X
+            # elif (Y < 0 and X < 0):  # TURN LEFT BACKWARD
+            #     print("LEFT BACK")
+            #     self.od1.axis0.controller.input_vel = -X
+            #     self.od1.axis1.controller.input_vel = -X
+            #     self.od2.axis0.controller.input_vel = -X
+            #     self.od2.axis1.controller.input_vel = -X
+            elif (Y == 0 and X == 0):   # HALT
+                self.od1.axis0.controller.input_vel = 0
+                self.od1.axis1.controller.input_vel = 0
+                self.od2.axis0.controller.input_vel = 0
+                self.od2.axis1.controller.input_vel = 0
+            else:   # All the TURNS handled by this
+                self.od1.axis0.controller.input_vel = -X
+                self.od1.axis1.controller.input_vel = -X
+                self.od2.axis0.controller.input_vel = -X
+                self.od2.axis1.controller.input_vel = -X
+        except:
             pass
-        elif (Y > 0 and X <= 1 and X >= -1):  # FORWARD
-            self.od1.axis0.controller.input_vel = -N
-            self.od1.axis1.controller.input_vel = -N
-            self.od2.axis0.controller.input_vel = N
-            self.od2.axis1.controller.input_vel = N
-        elif (Y < 0 and X <= 1 and X >= -1):  # BACKWARD
-            self.od1.axis0.controller.input_vel = N
-            self.od1.axis1.controller.input_vel = N
-            self.od2.axis0.controller.input_vel = -N
-            self.od2.axis1.controller.input_vel = -N
-        # elif (Y > 0 and X > 0):  # TURN RIGHT FORWARD
-        #     print("RIGHT")
-        #     self.od1.axis0.controller.input_vel = -X
-        #     self.od1.axis1.controller.input_vel = -X
-        #     self.od2.axis0.controller.input_vel = -X
-        #     self.od2.axis1.controller.input_vel = -X
-        # elif (Y > 0 and X < 0):  # TURN LEFT FORWARD
-        #     print("LEFT")
-        #     self.od1.axis0.controller.input_vel = -X
-        #     self.od1.axis1.controller.input_vel = -X
-        #     self.od2.axis0.controller.input_vel = -X
-        #     self.od2.axis1.controller.input_vel = -X
-        # elif (Y < 0 and X > 0):  # TURN RIGHT BACKWARD
-        #     print("RIGHT BACK")
-        #     self.od1.axis0.controller.input_vel = -X
-        #     self.od1.axis1.controller.input_vel = -X
-        #     self.od2.axis0.controller.input_vel = -X
-        #     self.od2.axis1.controller.input_vel = -X
-        # elif (Y < 0 and X < 0):  # TURN LEFT BACKWARD
-        #     print("LEFT BACK")
-        #     self.od1.axis0.controller.input_vel = -X
-        #     self.od1.axis1.controller.input_vel = -X
-        #     self.od2.axis0.controller.input_vel = -X
-        #     self.od2.axis1.controller.input_vel = -X
-        elif (Y == 0 and X == 0):   # HALT
-            self.od1.axis0.controller.input_vel = 0
-            self.od1.axis1.controller.input_vel = 0
-            self.od2.axis0.controller.input_vel = 0
-            self.od2.axis1.controller.input_vel = 0
-        else:   # All the TURNS handled by this
-            self.od1.axis0.controller.input_vel = -X
-            self.od1.axis1.controller.input_vel = -X
-            self.od2.axis0.controller.input_vel = -X
-            self.od2.axis1.controller.input_vel = -X
 
         self._redirect('/')  # Redirect back to the root url
 
