@@ -2,6 +2,24 @@
 
 ShadowCat is a project of a robot car that cleans air ducts. It's powered by Raspberry Pi and ODrive. 
 
+## How to run
+This entire single filed program should be stored in the SDcard connected to the Raspberry Pi. I'm also running it via ssh from my laptop:
+
+```
+ssh pi@raspberrypi.local
+```
+The password is ```raspberry```.
+
+To run the code, type:
+```
+python3 od_server.py
+```
+
+To run the camera stream:
+```
+lol gonna update this later
+```
+
 Below is the Python reference for the ODrive requested states. Use 8 before trying to control your motors programmatically using ODrive.
 ```
 AXIS_STATE_UNDEFINED  —  0
