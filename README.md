@@ -20,6 +20,7 @@ To run the camera stream:
 lol gonna update this later
 ```
 
+## Reference of ODrive Requested States
 Below is the Python reference for the ODrive requested states. Use 8 before trying to control your motors programmatically using ODrive.
 ```
 AXIS_STATE_UNDEFINED  —  0
