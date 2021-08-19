@@ -597,11 +597,11 @@ class MyServer(BaseHTTPRequestHandler):
                         var speed_factor = 0.01;
 
                         setInterval(function(){{
-                            joy1X.value=parseFloat(joy.GetX() * speed_factor);
+                            joy1X.value=parseInt(joy.GetX() * speed_factor);
                             // Xb = true;
                         }}, 50);
                         setInterval(function(){{
-                            joy1Y.value=parseFloat(joy.GetY() * speed_factor);
+                            joy1Y.value=parseInt(joy.GetY() * speed_factor);
                             // Yb = true;
                         }}, 50);
 
@@ -664,20 +664,6 @@ class MyServer(BaseHTTPRequestHandler):
 
         print(post_data)
 
-        # Easier control over our maximum speed with a variable
-        N = 1
-
-        """
-        The ODrive and the config atm for ShadowCat
-        
-                     BRUSH
-        [] od2.axis1       [] od1.axis0
-
-
-        [] od2.axis0       [] od1.axis1
-
-        """
-
         if post_data[0] == "VACUUM":
             print("VRRRRUUUUUMMMM")
             print(self.pi.read(self.VAC_GPIO))
@@ -694,7 +680,7 @@ class MyServer(BaseHTTPRequestHandler):
                 sleep(0.55)
                 self.pi.write(self.VAC_GPIO, 0)
                 sleep(0.55)
-                self.pi.write(self.VAC_GPIO, 1)
+                # self.pi.write(self.VAC_GPIO, 1)
                 # self.suc = False
         elif post_data[0] == "BRUSH":
             print("BRUSH SOUNDS")
@@ -715,7 +701,21 @@ class MyServer(BaseHTTPRequestHandler):
                 # self.pi.write(self.BRS_GPIO, 1)
                 # self.brush = False
 
-            # Joystick control
+        """
+        The ODrive and the config atm for ShadowCat
+        
+                     BRUSH
+        [] od2.axis1       [] od1.axis0
+
+
+        [] od2.axis0       [] od1.axis1
+
+        """
+
+        # Easier control over our maximum speed with a variable
+        N = 1
+
+        # Joystick control
         try:
             Y = int(post_data[0])
             X = int(post_data[1])
@@ -733,30 +733,6 @@ class MyServer(BaseHTTPRequestHandler):
                 self.od1.axis1.controller.input_vel = N
                 self.od2.axis0.controller.input_vel = -N
                 self.od2.axis1.controller.input_vel = -N
-            # elif (Y > 0 and X > 0):  # TURN RIGHT FORWARD
-            #     print("RIGHT")
-            #     self.od1.axis0.controller.input_vel = -X
-            #     self.od1.axis1.controller.input_vel = -X
-            #     self.od2.axis0.controller.input_vel = -X
-            #     self.od2.axis1.controller.input_vel = -X
-            # elif (Y > 0 and X < 0):  # TURN LEFT FORWARD
-            #     print("LEFT")
-            #     self.od1.axis0.controller.input_vel = -X
-            #     self.od1.axis1.controller.input_vel = -X
-            #     self.od2.axis0.controller.input_vel = -X
-            #     self.od2.axis1.controller.input_vel = -X
-            # elif (Y < 0 and X > 0):  # TURN RIGHT BACKWARD
-            #     print("RIGHT BACK")
-            #     self.od1.axis0.controller.input_vel = -X
-            #     self.od1.axis1.controller.input_vel = -X
-            #     self.od2.axis0.controller.input_vel = -X
-            #     self.od2.axis1.controller.input_vel = -X
-            # elif (Y < 0 and X < 0):  # TURN LEFT BACKWARD
-            #     print("LEFT BACK")
-            #     self.od1.axis0.controller.input_vel = -X
-            #     self.od1.axis1.controller.input_vel = -X
-            #     self.od2.axis0.controller.input_vel = -X
-            #     self.od2.axis1.controller.input_vel = -X
             elif (Y == 0 and X == 0):   # HALT
                 self.od1.axis0.controller.input_vel = 0
                 self.od1.axis1.controller.input_vel = 0
