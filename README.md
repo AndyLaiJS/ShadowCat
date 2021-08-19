@@ -1,6 +1,6 @@
 # ShadowCat
 
-ShadowCat is a project of a robot car that cleans air ducts. It's powered by Raspberry Pi and ODrive. 
+ShadowCat is a project of a robot car that cleans air ducts. It's powered by Raspberry Pi and ODrive. Other libraries used include ```pigpio```, and ```mjpg-streamer```. More info can be found here: https://abyz.me.uk/rpi/pigpio/python.html and https://github.com/jacksonliam/mjpg-streamer, respectively.
 
 ## How to run
 This entire single filed program should be stored in the SDcard connected to the Raspberry Pi. I'm also running it via ssh from my laptop:
