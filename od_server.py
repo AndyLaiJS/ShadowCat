@@ -84,8 +84,8 @@ class MyServer(BaseHTTPRequestHandler):
     sleep(2)
     od2.axis1.requested_state = 8
     sleep(2)
-    pi.write(VAC_GPIO, 1)
-    pi.write(BRS_GPIO, 1)
+    pi.write(VAC_GPIO, 0)
+    pi.write(BRS_GPIO, 0)
 
     print("Complete!")
     # Start the Raspberry Pi Camera Stream (Andy's Laptop directory)
@@ -627,8 +627,8 @@ class MyServer(BaseHTTPRequestHandler):
                                 console.log("MOTOR R: ", joy1X.value);
                             }}
                             data.push(parseInt(joy1X.value));
-                            if (data[0] == 0 && data[1] == 0 && count == 0) {{
-                                count = count + 1;
+                            if (data[0] == 0 && data[1] == 0) {{
+                                // count = count + 1;
                                 console.log(count, data);
                                 $.post("/", {{m1: data[0], m2: data[1]}});
                             }}
@@ -669,9 +669,11 @@ class MyServer(BaseHTTPRequestHandler):
             print(self.pi.read(self.VAC_GPIO))
             print("/n/n")
             # self.pi.write(self.VAC_GPIO, 0)
-            if self.pi.read(self.VAC_GPIO) == 1:
+            if self.pi.read(self.VAC_GPIO) == 0:
                 # if self.suc == False:
                 print("vacuum worrr")
+                self.pi.write(self.VAC_GPIO, 1)
+                sleep(0.55)
                 self.pi.write(self.VAC_GPIO, 0)
                 # self.suc = True
             else:
@@ -679,22 +681,24 @@ class MyServer(BaseHTTPRequestHandler):
                 self.pi.write(self.VAC_GPIO, 1)
                 sleep(0.55)
                 self.pi.write(self.VAC_GPIO, 0)
-                sleep(0.55)
-                # self.pi.write(self.VAC_GPIO, 1)
+                # sleep(0.55)
+                # self.pi.write(self.VAC_GPIO, 0)
                 # self.suc = False
         elif post_data[0] == "BRUSH":
             print("BRUSH SOUNDS")
             print(self.pi.read(self.BRS_GPIO))
             print("/n/n")
             # self.pi.write(self.BRS_GPIO, 0)
-            if self.pi.read(self.BRS_GPIO) == 1:
+            if self.pi.read(self.BRS_GPIO) == 0:
                 # if self.brush == False:
                 print("brush worrr")
-                self.pi.write(self.BRS_GPIO, 0)
+                self.pi.write(self.BRS_GPIO, 1)
+                sleep(0.55)
+                # self.pi.write(self.VAC_GPIO, 1)
                 # self.brush = True
             else:
                 print("brush not worrr")
-                self.pi.write(self.BRS_GPIO, 1)
+                self.pi.write(self.BRS_GPIO, 0)
                 sleep(0.55)
                 # self.pi.write(self.BRS_GPIO, 0)
                 # sleep(0.55)
@@ -723,12 +727,12 @@ class MyServer(BaseHTTPRequestHandler):
             # Joystick can register out of bound values sometimes
             if (X > N or Y > N or X < -N or Y < -N):
                 pass
-            elif (Y > 0 and X <= 1 and X >= -1):  # FORWARD
+            elif (Y > 0 and X == 0):  # FORWARD
                 self.od1.axis0.controller.input_vel = -N
                 self.od1.axis1.controller.input_vel = -N
                 self.od2.axis0.controller.input_vel = N
                 self.od2.axis1.controller.input_vel = N
-            elif (Y < 0 and X <= 1 and X >= -1):  # BACKWARD
+            elif (Y < 0 and X == 0):  # BACKWARD
                 self.od1.axis0.controller.input_vel = N
                 self.od1.axis1.controller.input_vel = N
                 self.od2.axis0.controller.input_vel = -N
@@ -738,11 +742,35 @@ class MyServer(BaseHTTPRequestHandler):
                 self.od1.axis1.controller.input_vel = 0
                 self.od2.axis0.controller.input_vel = 0
                 self.od2.axis1.controller.input_vel = 0
+            # elif (Y > 0 and X > 0):  # TURN RIGHT FORWARD
+            #     print("RIGHT")
+            #     self.od1.axis0.controller.input_vel = 0
+            #     self.od1.axis1.controller.input_vel = -X
+            #     self.od2.axis0.controller.input_vel = 0
+            #     self.od2.axis1.controller.input_vel = X
+            # elif (Y > 0 and X < 0):  # TURN LEFT FORWARD
+            #     print("LEFT")
+            #     self.od1.axis0.controller.input_vel = 0
+            #     self.od1.axis1.controller.input_vel = X
+            #     self.od2.axis0.controller.input_vel = 0
+            #     self.od2.axis1.controller.input_vel = -X
+            # elif (Y < 0 and X > 0):  # TURN RIGHT BACKWARD
+            #     print("RIGHT BACK")
+            #     self.od1.axis0.controller.input_vel = 0
+            #     self.od1.axis1.controller.input_vel = X
+            #     self.od2.axis0.controller.input_vel = 0
+            #     self.od2.axis1.controller.input_vel = -X
+            # elif (Y < 0 and X < 0):  # TURN LEFT BACKWARD
+            #     print("LEFT BACK")
+            #     self.od1.axis0.controller.input_vel = 0
+            #     self.od1.axis1.controller.input_vel = -X
+            #     self.od2.axis0.controller.input_vel = 0
+            #     self.od2.axis1.controller.input_vel = X
             else:   # All the TURNS handled by this
-                self.od1.axis0.controller.input_vel = -X
-                self.od1.axis1.controller.input_vel = -X
-                self.od2.axis0.controller.input_vel = -X
-                self.od2.axis1.controller.input_vel = -X
+                self.od1.axis0.controller.input_vel = -(X/2)
+                self.od1.axis1.controller.input_vel = -(X/2)
+                self.od2.axis0.controller.input_vel = -(X/2)
+                self.od2.axis1.controller.input_vel = -(X/2)
         except:
             pass
 
