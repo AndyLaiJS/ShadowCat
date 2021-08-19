@@ -33,17 +33,18 @@ class MyServer(BaseHTTPRequestHandler):
     print("Detected ODrive with serial number=", od2.serial_number)
     print("Rebooting them just for a fresh start...")
 
-    # try:
-    #     od1.reboot()
-    #     od2.reboot()
-    #     sleep(5)
-    # except:
-    #     print('Lost connection because of reboot...')
+    try:
+        od1.reboot()
+        sleep(1.5)
+        od2.reboot()
+        sleep(1.5)
+    except:
+        print('Lost connection because of reboot...')
 
-    # od1 = odrive.find_any(serial_number="2064344D4230")
-    # print("Detected ODrive with serial number=", od1.serial_number)
-    # od2 = odrive.find_any(serial_number="2068344C4230")
-    # print("Detected ODrive with serial number=", od2.serial_number)
+    od1 = odrive.find_any(serial_number="2064344D4230")
+    print("Detected ODrive with serial number=", od1.serial_number)
+    od2 = odrive.find_any(serial_number="2068344C4230")
+    print("Detected ODrive with serial number=", od2.serial_number)
 
     # requested_state for ODrive
     """
@@ -77,13 +78,13 @@ class MyServer(BaseHTTPRequestHandler):
     print("Calibrating...")
     # initialize rotation to this always
     od1.axis0.requested_state = 8
-    sleep(2)
+    sleep(1)
     od1.axis1.requested_state = 8
-    sleep(2)
+    sleep(1)
     od2.axis0.requested_state = 8
-    sleep(2)
+    sleep(1)
     od2.axis1.requested_state = 8
-    sleep(2)
+    sleep(1)
     pi.write(VAC_GPIO, 0)
     pi.write(BRS_GPIO, 0)
 
