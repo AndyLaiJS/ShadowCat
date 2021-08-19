@@ -17,7 +17,9 @@ python3 od_server.py
 
 To run the camera stream:
 ```
-lol gonna update this later
+cd mjpg-streamer
+cd mjpg-streamer-experimental
+<<will update the remaining execution line here soon>>
 ```
 
 ## Reference of ODrive Requested States
@@ -46,13 +48,13 @@ My programming assumed the address the Pi as 10.1.2.154. Please change it in od_
 ## ODrive
 Currently, the motors and ODrive are connected such that it looks like the below rough diagram sketch:
 ```
-        The ODrive and the config atm for ShadowCat
-        
-                     BRUSH
-        [] od2.axis1       [] od1.axis0
+The ODrive and the config atm for ShadowCat
+
+             BRUSH
+[] od2.axis1       [] od1.axis0
 
 
-        [] od2.axis0       [] od1.axis1
+[] od2.axis0       [] od1.axis1
 ```
 
 The controlling of the motors are done through:
