@@ -126,7 +126,7 @@ My program assumes pre-calibration separately using the ```odrivetool``` command
 ## Raspberry Pi 
 My programming assumed the address the Pi as 10.1.2.154. Please change it in od_server.py from ```host_name = '10.1.2.154'``` to host_name = ```'YOUR_PI_IP_ADDRESS'``` which can be found by typing ```ping raspberrypi.local``` in your terminal/command prompt.
 
-## ODrive
+## ODrive, Axis and Layout
 Currently, the motors and ODrive are connected such that it looks like the below rough diagram sketch:
 ```
 The ODrive and the config atm for ShadowCat
