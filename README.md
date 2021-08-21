@@ -72,7 +72,7 @@ odrv0.axis1.controller.input_vel = 2
 ```
 Feel free to play around the value (but of course, don't go crazy with it)
 
-You can stop it simply by running this
+You can stop it simply by running this:
 ```
 odrv0.axis1.controller.input_vel = 0
 ```
