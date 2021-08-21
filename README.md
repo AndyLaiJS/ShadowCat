@@ -1,7 +1,88 @@
 # ShadowCat
 
-ShadowCat is a project of a robot car that cleans air ducts. It's powered by Raspberry Pi and ODrive. Other libraries used include ```pigpio```, and ```mjpg-streamer```. More info can be found here: https://abyz.me.uk/rpi/pigpio/python.html and https://github.com/jacksonliam/mjpg-streamer, respectively.
+ShadowCat is a project of a robot car that cleans air ducts. It's powered by Raspberry Pi and ODrive. Other libraries used include ```pigpio```, and ```mjpg-streamer```. More info can be found here: 
+https://abyz.me.uk/rpi/pigpio/python.html and; 
+https://github.com/jacksonliam/mjpg-streamer;
+respectively.
 
+## Motor Calibration using ODrive
+The motor in use is the E-Tech Brushless 4 Inch Electric Single Shaft Hub Motor Wheel. Different hub motor wheel, of course, will have different configuration to the one below. The datasheet from the manufacturer is a good place to start to find the technical specification which will help you in configuring your motors. You can refer to the official documentation for the ODrive for more detailed information: https://docs.odriverobotics.com/
+
+```
+odrv0.config.brake_resistance=11.5
+odrv0.axis0.motor.config.pole_pairs=10
+odrv0.axis0.motor.config.motor_type =MOTOR_TYPE_HIGH_CURRENT
+odrv0.axis0.encoder.config.cpr=60
+odrv0.axis0.motor.config.torque_constant = 1
+odrv0.axis0.motor.config.resistance_calib_max_voltage = 15
+odrv0.axis0.motor.config.requested_current_range = 25
+odrv0.axis0.encoder.config.mode = ENCODER_MODE_HALL
+odrv0.axis0.controller.config.pos_gain = 20
+odrv0.axis0.controller.config.vel_gain = 0.02 * odrv0.axis1.motor.config.torque_constant * odrv0.axis1.encoder.config.cpr
+odrv0.axis0.controller.config.vel_integrator_gain = 0.1 * odrv0.axis1.motor.config.torque_constant * odrv0.axis1.encoder.config.cpr
+odrv0.axis0.controller.config.vel_limit = 10
+odrv0.axis0.controller.config.control_mode = CONTROL_MODE_VELOCITY_CONTROL
+```
+
+These settings are required as well, and has helped increased the holding torque (makes the wheel hold stronger when external forces are applied)
+```
+odrv0.axis0.motor.config.current_control_bandwidth = 35
+odrv0.axis0.motor.config.current_lim = 25
+odrv0.axis0.encoder.config.bandwidth = 800
+odrv0.axis0.controller.config.pos_gain = 70
+odrv0.axis0.controller.config.vel_gain = 30
+odrv0.axis0.controller.config.vel_indicator_gain = 30
+```
+
+Run these to save them:
+```
+odrv0.save_configuration()
+odrv0.reboot()
+```
+
+After that, run each of these lines individually and ensure no errors had occured after each run:
+```
+odrv0.axis0.requested_state = AXIS_STATE_MOTOR_CALIBRATION
+odrv0.axis0.requested_state = AXIS_STATE_ENCODER_OFFSET_CALIBRATION
+```
+
+To check for errors, simply run ```dump_errors(odrv0)```
+
+When you have ensured that there are no errors, run these lines:
+```
+odrv0.axis0.motor.config.pre_calibrated = True
+odrv0.axis0.encoder.config.pre_calibrated = True
+```
+
+Run these again:
+```
+odrv0.save_configuration()
+odrv0.reboot()
+```
+
+## ODrive Speed Control
+Prepare the motor for control by running these:
+```
+odrv0.axis0.requested_state = AXIS_STATE_CLOSED_LOOP_CONTROL
+```
+
+To control the speed, run this:
+```
+odrv0.axis1.controller.input_vel = 2 
+```
+Feel free to play around the value (but of course, don't go crazy with it)
+
+You can stop it simply by running this
+```
+odrv0.axis1.controller.input_vel = 0
+```
+
+To idle the motor and prevent further control, run:
+```
+odrv0.axis0.requested_state = AXIS_STATE_IDLE
+```
+
+More detailed information can be found in the official documentation of ODrive: https://docs.odriverobotics.com/
 ## How to run
 This entire single filed program should be stored in the SDcard connected to the Raspberry Pi. I'm also running it via ssh from my laptop:
 
