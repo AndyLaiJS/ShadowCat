@@ -100,7 +100,7 @@ To run the camera stream:
 ```
 cd mjpg-streamer
 cd mjpg-streamer-experimental
-<<will update the remaining execution line here soon>>
+./mjpg_streamer -o "output_http.so -w ./www" -i "input_raspicam.so -x 480 -y 360 -fps 25 -rot 180"
 ```
 
 ## Reference of ODrive Requested States
