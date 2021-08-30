@@ -1,3 +1,4 @@
+# coding: utf-8
 import odrive
 import RPi.GPIO as GPIO
 import os
@@ -628,8 +629,8 @@ class MyServer(BaseHTTPRequestHandler):
                                 console.log("MOTOR R: ", joy1X.value);
                             }}
                             data.push(parseInt(joy1X.value));
-                            if (data[0] == 0 && data[1] == 0) {{
-                                // count = count + 1;
+                            if (data[0] == 0 && data[1] == 0 && count == 0) {{
+                                count = count + 1;
                                 console.log(count, data);
                                 $.post("/", {{m1: data[0], m2: data[1]}});
                             }}
@@ -639,7 +640,7 @@ class MyServer(BaseHTTPRequestHandler):
                                 $.post("/", {{m1: data[0], m2: data[1]}});
                             }}
 
-                        }}, 100)
+                        }}, 150)
                     </script>
                 </body>
             </html>
